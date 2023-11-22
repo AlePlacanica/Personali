@@ -23,13 +23,13 @@ WordGrinder dumpfile v3: this is a text file; diff me!
 .addons.spellchecker.enabled: false
 .addons.spellchecker.usesystemdictionary: true
 .addons.spellchecker.useuserdictionary: true
-.documents.1.co: 5
-.documents.1.cp: 4
-.documents.1.cw: 35
+.documents.1.co: 11
+.documents.1.cp: 2
+.documents.1.cw: 17
 .documents.1.margin: 0
 .documents.1.name: "main"
 .documents.1.viewmode: 1
-.documents.1.wordcount: 143
+.documents.1.wordcount: 106
 .fileformat: 8
 .menu.accelerators.BACKSPACE: "ZDPC"
 .menu.accelerators.DELETE: "ZDNC"
@@ -133,12 +133,11 @@ WordGrinder dumpfile v3: this is a text file; diff me!
 .menu.accelerators.^X: "ET"
 .menu.accelerators.^Y: "Eredo"
 .menu.accelerators.^Z: "Eundo"
-.name: "/Users/alessandroplacanica/Documents/Personali/Me/Diary/Ideas.wg"
+.name: "/home/alessandroplacanica/Documents/Personali/Me/Diary/Ideas.wg"
 .statusbar: true
 .current: 1
 #1
 LB iPhone e Mac: lasci uno e continui il lavoro con l'altro, se c'è un documento aperto a cui stavo lavorando o un qualcosa che stavo guardando, un pezzo di codice che stavo scrivendo, lascio il computer e prendo l'iPhone vorrei che mi venisse mandata una notifica chiedendomi se voglio continuare quello che avevo lasciato.
 LB App Store: lista dei dispositivi su cui posso installare l'applicazione, da computer installarla sul telefono o viceversa.
-LB Midnight Commander: mi piacerebbe che quando apro un percorso e arrivo ad un file cliccandoci sopra mi si copiasse il percorso nel terminale in modo da poterlo aprire con l'app che voglio risparmiandomi ogni volta un cd.
 LB Linux e AirPods: se sono collegate al pc e prendo il cellulare il mano vorrei che non si collegassero dopo 30s di nuovo al computer, ma che rimanessero associate all'iPhone, un po' come col Mac.
 .
