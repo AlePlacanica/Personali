@@ -62,11 +62,12 @@ struct Carico {
 struct VenditaTemporanea {
     string data;
     string cliente;
-    double soldi;
+    double totale;
+    double pagato;
+    string stato;
 };
 
 vector<Carico> magazzino;
-vector<VenditaTemporanea> bufferVendite;
 
 string dataAttuale() {
     time_t t = time(0);
@@ -90,18 +91,21 @@ void salvaTutto() {
     ofstream file(PATH_CSV);
     file << "Fornitore,GrammiIniziali,Rimanenti,CostoSostenuto,PrezzoVenditaAlG,UtileAttuale,DataCarico\n";
     for (const auto& c : magazzino) {
-        file << c.fornitore << "," << c.grammiIniziali << "," << c.grammiRimanenti << "," 
+        file << c.fornitore << "," << c.grammiIniziali << "," << c.grammiRimanenti << ","
              << c.costoSostenuto << "," << c.prezzoVenditaAlG << "," << c.utileAttuale << "," << c.dataCarico << "\n";
     }
     file.close();
+}
 
-    if (!bufferVendite.empty()) {
-        ofstream logFile(PATH_LOG, ios::app);
-        for (const auto& v : bufferVendite) {
-            logFile << "[" << v.data << "] USER: " << v.cliente << " | CREDIT: " << fixed << setprecision(2) << v.soldi << " EUR" << endl;
-        }
-        logFile.close();
-    }
+void registraVenditaLog(const string& data, const string& cliente, double totale, double pagato, const string& stato) {
+    double debito = totale - pagato;
+    ofstream logFile(PATH_LOG, ios::app);
+    logFile << "[" << data << "] CLIENTE: " << cliente
+            << " | TOTALE: " << fixed << setprecision(2) << totale << " EUR"
+            << " | PAGATO: " << pagato << " EUR"
+            << " | DEBITO: " << debito << " EUR"
+            << " | STATO: " << stato << endl;
+    logFile.close();
 }
 
 void caricaDati() {
@@ -165,6 +169,7 @@ int main() {
         cout << " " << AMBER << "[02]" << RESET << " Execute Discharge" << endl;
         cout << " " << AMBER << "[03]" << RESET << " Access Ledger File" << endl;
         cout << " " << AMBER << "[04]" << RESET << " Read Chrono Log (Stream)" << endl;
+        cout << " " << AMBER << "[06]" << RESET << " Save to Disk (without shutdown)" << endl;
         cout << " " << AMBER << "[05]" << RESET << " Shutdown System" << endl;
         cout << DIM << "\n root@hawkins_lab > " << RESET;
         cin >> scelta;
@@ -190,15 +195,29 @@ int main() {
             cout << AMBER << ">> DISCHARGE_SEQUENCE" << RESET << "\n\n";
             cout << " Entry ID: "; int idx; cin >> idx;
             if (idx >= 0 && idx < (int)magazzino.size()) {
-                double soldi; string cliente;
+                double totale; double pagato; string cliente;
                 cout << " Client: "; cin >> cliente;
-                cout << " Revenue: "; cin >> soldi;
-                double g = soldi / magazzino[idx].prezzoVenditaAlG; 
-                if (g <= magazzino[idx].grammiRimanenti) {
-                    magazzino[idx].grammiRimanenti -= g; 
-                    magazzino[idx].utileAttuale += soldi;      
-                    bufferVendite.push_back({dataAttuale(), cliente, soldi});
-                    cout << "\n " << AMBER << ">> TRANSACTION_STAGED." << RESET;
+                cout << " Total order value (EUR): "; cin >> totale;
+                cout << " Paid now (EUR): "; cin >> pagato;
+                if (totale <= 0) {
+                    cout << "\n " << RED << "ERROR: invalid order value." << RESET;
+                } else if (pagato < 0 || pagato > totale) {
+                    cout << "\n " << RED << "ERROR: invalid paid amount." << RESET;
+                } else {
+                    double g = totale / magazzino[idx].prezzoVenditaAlG;
+                    if (g <= magazzino[idx].grammiRimanenti) {
+                        magazzino[idx].grammiRimanenti -= g;
+                        magazzino[idx].utileAttuale += pagato;
+                        string stato;
+                        if (pagato >= totale) stato = "SALDATO";
+                        else if (pagato == 0) stato = "NON SALDATO";
+                        else stato = "PARZIALE";
+                        registraVenditaLog(dataAttuale(), cliente, totale, pagato, stato);
+                        double debito = totale - pagato;
+                        cout << "\n " << AMBER << ">> TRANSACTION_LOGGED: " << stato << " (DEBITO " << fixed << setprecision(2) << debito << " EUR)" << RESET;
+                    } else {
+                        cout << "\n " << RED << "ERROR: insufficient remaining grams." << RESET;
+                    }
                 }
             }
             cin.ignore(); cin.get();
@@ -234,6 +253,12 @@ int main() {
             system(comando.c_str());
             cout << DIM << "\n..........................................." << RESET;
             cout << DIM << "\n[Enter] to return to system" << RESET;
+            cin.ignore(); cin.get();
+        }
+        else if (scelta == 6) {
+            system("clear");
+            salvaTutto();
+            cout << GREEN << ">> DATABASE SAVED TO DISK WITHOUT SHUTDOWN." << RESET << endl;
             cin.ignore(); cin.get();
         }
         else if (scelta == 0) {
